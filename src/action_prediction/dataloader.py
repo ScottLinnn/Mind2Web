@@ -124,6 +124,35 @@ def format_input_multichoice(
     return tree_repr, seq_input, seq_target, choices
 
 
+def format_reflection_multichoice(failure_history):
+    # failure_history is a list of final_prediction
+    # final_prediction is a list of (element, action)
+    # final_precition is returned by this function
+    #   def postprocess_action(self, text):
+    # # C.
+    # # Action: SELECT
+    # # Value: Queen
+    # text = text.strip()
+    # selected_option = text[0]
+    # action = re.search(r"Action: (CLICK|SELECT|TYPE)", text)
+    # action = action.group(1) if action is not None else ""
+    # value = re.search(r"Value: (.*)$", text, re.MULTILINE)
+    # value = value.group(1) if value is not None else ""
+    # return selected_option, action.strip() + " " + value.strip()
+
+    # Format a reflection prompt
+    seq_input = "You have made one or more attempts to this question,"
+    "here is the history of your failed predictions: \n"
+    for idx, prediction in enumerate(failure_history):
+        seq_input += f"Attempt {idx + 1}:\n"
+        for element, action in prediction:
+            seq_input += f"You selected element: {element}\n"
+            seq_input += f"You selected action: {action}\n"
+    seq_input += "Your predictions above are partially or completely incorrect. "
+    seq_input += "For example, it's possible that you selected a correct element but a wrong action."
+    seq_input += "Please reflect on your previous attempts and try to provide a correct prediction this time."
+
+
 class MultiChoiceDataset(Dataset):
     def __init__(
         self,
